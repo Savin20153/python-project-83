@@ -1,0 +1,14 @@
+*.egg-info
+__pycache__
+dist/
+*.pyc
+.venv
+.coverage
+coverage.xml
+*_cache/
+.lock
+.json
+.yml
+.yaml
+.cast
+.env
