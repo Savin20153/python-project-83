@@ -1,0 +1,21 @@
+{% extends "index.html" %}
+{% block content %}
+<div class="d-flex justify-content-center align-items-center" style="min-height: 60vh;">
+  <div class="col-xl-10 col-lg-10">
+    <div class="p-5 bg-light rounded-3 shadow-sm text-center">
+      <h1 class="display-1 fw-bold mb-3">Анализатор страниц</h1>
+      <p class="lead mb-4">Бесплатно проверяйте сайты на SEO-пригодность</p>
+      <form action="/" method="post" class="d-flex gap-2 justify-content-center">
+        <input
+          type="url"
+          name="url"
+          class="form-control form-control-lg"
+          placeholder="https://www.example.com"
+          required
+        >
+        <button type="submit" class="btn btn-primary btn-lg px-5">ПРОВЕРИТЬ</button>
+      </form>
+    </div>
+  </div>
+</div>
+{% endblock %}

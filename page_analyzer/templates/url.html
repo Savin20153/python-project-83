@@ -1,0 +1,22 @@
+{% extends "index.html" %}
+{% block content %}
+<div class="container my-5">
+  <h1 class="display-4 fw-bold mb-4">Сайт: {{ url[1] }}</h1>
+  <table class="table" data-test="url">
+    <tbody>
+      <tr>
+        <th>ID</th>
+        <td>{{ url[0] }}</td>
+      </tr>
+      <tr>
+        <th>Имя</th>
+        <td>{{ url[1] }}</td>
+      </tr>
+      <tr>
+        <th>Дата добавления</th>
+        <td>{{ url[2] }}</td>
+      </tr>
+    </tbody>
+  </table>
+</div>
+{% endblock %}
