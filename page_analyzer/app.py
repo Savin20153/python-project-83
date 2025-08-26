@@ -33,11 +33,11 @@ def index():
                 cur.execute(
                     "SELECT id FROM urls WHERE name=%s",
                     (normalized_url,)
-                    )
+                )
                 row = cur.fetchone()
                 if row:
                     flash("Страница уже существует", "info")
-                    return redirect(url_for("url_show", id=row[0]))
+                    return redirect(url_for("show_url", id=row[0]))
                 cur.execute(
                     "INSERT INTO urls (name, created_at) VALUES (%s, %s) "
                     "RETURNING id",
@@ -45,30 +45,100 @@ def index():
                 )
                 new_id = cur.fetchone()[0]
                 flash("Страница успешно добавлена", "success")
-                return redirect(url_for("url_show", id=new_id))
+                return redirect(url_for("show_url", id=new_id))
     return render_template("main_content.html")
 
 
-@app.route("/urls")
+@app.route('/urls')
 def urls():
-    with get_conn() as conn:
-        with conn.cursor() as cur:
-            cur.execute(
-                "SELECT id, name, created_at FROM urls ORDER BY id DESC"
-                )
-            urls = cur.fetchall()
-    return render_template("urls.html", urls=urls)
+    conn = get_conn()
+    cur = conn.cursor()
+    cur.execute(
+        '''
+        SELECT
+            urls.id,
+            urls.name,
+            MAX(url_checks.created_at) AS last_check,
+            MAX(url_checks.status_code) AS status_code
+        FROM urls
+        LEFT JOIN url_checks ON urls.id = url_checks.url_id
+        GROUP BY urls.id, urls.name
+        ORDER BY urls.id DESC
+        '''
+    )
+    urls = [
+        {
+            'id': row[0],
+            'name': row[1],
+            'last_check': row[2],
+            'status_code': row[3]
+        }
+        for row in cur.fetchall()
+    ]
+    cur.close()
+    conn.close()
+    return render_template('urls.html', urls=urls)
 
 
-@app.route("/urls/<int:id>")
-def url_show(id):
-    with get_conn() as conn:
-        with conn.cursor() as cur:
-            cur.execute(
-                "SELECT id, name, created_at FROM urls WHERE id=%s", (id,)
-                )
-            url = cur.fetchone()
-    if not url:
-        flash("Страница не найдена", "danger")
-        return redirect(url_for("urls"))
-    return render_template("url.html", url=url)
+@app.route('/urls/<int:id>')
+def show_url(id):
+    conn = get_conn()
+    cur = conn.cursor()
+    cur.execute(
+        'SELECT id, name, created_at FROM urls WHERE id = %s',
+        (id,)
+    )
+    url_row = cur.fetchone()
+    url = {
+        'id': url_row[0],
+        'name': url_row[1],
+        'created_at': url_row[2]
+    } if url_row else None
+
+    cur.execute(
+        '''
+        SELECT
+            id,
+            url_id,
+            status_code,
+            h1,
+            title,
+            description,
+            created_at
+        FROM url_checks
+        WHERE url_id = %s
+        ORDER BY id DESC
+        ''',
+        (id,)
+    )
+    checks = [
+        {
+            'id': row[0],
+            'url_id': row[1],
+            'status_code': row[2],
+            'h1': row[3],
+            'title': row[4],
+            'description': row[5],
+            'created_at': row[6]
+        }
+        for row in cur.fetchall()
+    ]
+    cur.close()
+    conn.close()
+    return render_template('url.html', url=url, checks=checks)
+
+
+@app.route('/urls/<int:id>/checks', methods=['POST'])
+def url_checks(id):
+    conn = get_conn()
+    cur = conn.cursor()
+    created_at = datetime.now()
+    cur.execute(
+        'INSERT INTO url_checks (url_id, created_at) VALUES (%s, %s)',
+        (id, created_at)
+    )
+    conn.commit()
+    cur.close()
+    conn.close()
+    flash('Проверка добавлена', 'success')
+    return redirect(url_for('show_url', id=id))

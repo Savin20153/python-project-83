@@ -1,22 +1,50 @@
 {% extends "index.html" %}
 {% block content %}
 <div class="container my-5">
-  <h1 class="display-4 fw-bold mb-4">Сайт: {{ url[1] }}</h1>
+  <h1 class="display-4 fw-bold mb-4">Сайт: {{ url.name }}</h1>
   <table class="table" data-test="url">
     <tbody>
       <tr>
         <th>ID</th>
-        <td>{{ url[0] }}</td>
+        <td>{{ url.id }}</td>
       </tr>
       <tr>
         <th>Имя</th>
-        <td>{{ url[1] }}</td>
+        <td>{{ url.name }}</td>
       </tr>
       <tr>
         <th>Дата добавления</th>
-        <td>{{ url[2] }}</td>
+        <td>{{ url.created_at }}</td>
       </tr>
     </tbody>
   </table>
 </div>
+<h2>Проверки</h2>
+<form method="post" action="{{ url_for('url_checks', id=url.id) }}">
+    <button type="submit" class="btn btn-primary">Запустить проверку</button>
+</form>
+<table class="table" data-test="checks">
+    <thead>
+        <tr>
+            <th>ID</th>
+            <th>Код ответа</th>
+            <th>h1</th>
+            <th>title</th>
+            <th>description</th>
+            <th>Дата создания</th>
+        </tr>
+    </thead>
+    <tbody>
+        {% for check in checks %}
+        <tr>
+            <td>{{ check.id }}</td>
+            <td>{{ check.status_code or '' }}</td>
+            <td>{{ check.h1 or '' }}</td>
+            <td>{{ check.title or '' }}</td>
+            <td>{{ check.description or '' }}</td>
+            <td>{{ check.created_at }}</td>
+        </tr>
+        {% endfor %}
+    </tbody>
+</table>
 {% endblock %}
