@@ -1,7 +1,8 @@
 import os
 from datetime import datetime
 from urllib.parse import urlparse
-
+import requests
+from bs4 import BeautifulSoup
 import psycopg2
 import validators
 from dotenv import load_dotenv
@@ -132,13 +133,46 @@ def show_url(id):
 def url_checks(id):
     conn = get_conn()
     cur = conn.cursor()
-    created_at = datetime.now()
-    cur.execute(
-        'INSERT INTO url_checks (url_id, created_at) VALUES (%s, %s)',
-        (id, created_at)
-    )
-    conn.commit()
-    cur.close()
-    conn.close()
-    flash('Проверка добавлена', 'success')
+    try:
+        cur.execute('SELECT name FROM urls WHERE id=%s', (id,))
+        row = cur.fetchone()
+        if not row:
+            flash('Сайт не найден', 'danger')
+            return redirect(url_for('urls'))
+        url = row[0]
+
+        response = requests.get(url, timeout=10)
+        status_code = response.status_code
+        response.raise_for_status()   
+
+        soup = BeautifulSoup(response.text, 'html.parser')
+
+        h1_tag = soup.h1
+        h1 = h1_tag.get_text(strip=True) if h1_tag else None
+
+        title_tag = soup.title
+        title = title_tag.get_text(strip=True) if title_tag else None
+
+        description = None
+        desc_tag = soup.find('meta', attrs={'name': 'description'})
+        if desc_tag and desc_tag.get('content'):
+            description = desc_tag['content'].strip()
+
+        created_at = datetime.now()
+        cur.execute(
+            '''INSERT INTO url_checks (url_id, status_code, h1, title, description, created_at)
+               VALUES (%s, %s, %s, %s, %s, %s)''',
+            (id, status_code, h1, title, description, created_at)
+        )
+        conn.commit()
+        flash('Страница успешно проверена', 'success')
+
+    except requests.RequestException:
+        flash('Произошла ошибка при проверке', 'danger')
+        conn.rollback()
+
+    finally:
+        cur.close()
+        conn.close()
+
     return redirect(url_for('show_url', id=id))
