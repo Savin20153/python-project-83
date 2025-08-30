@@ -21,34 +21,33 @@ def get_conn():
     return psycopg2.connect(DATABASE_URL)
 
 
-@app.route("/", methods=["GET", "POST"])
+@app.route("/", methods=["GET"])
 def index():
-    if request.method == "POST":
-        url = request.form.get("url", "").strip()
-        if not validators.url(url) or len(url) > 255:
-            flash("Некорректный URL", "danger")
-            return redirect(url_for("index"))
-        parsed = urlparse(url)
-        normalized_url = f"{parsed.scheme}://{parsed.netloc}"
-        with get_conn() as conn:
-            with conn.cursor() as cur:
-                cur.execute(
-                    "SELECT id FROM urls WHERE name=%s",
-                    (normalized_url,)
-                )
-                row = cur.fetchone()
-                if row:
-                    flash("Страница уже существует", "info")
-                    return redirect(url_for("show_url", id=row[0]))
-                cur.execute(
-                    "INSERT INTO urls (name, created_at) VALUES (%s, %s) "
-                    "RETURNING id",
-                    (normalized_url, datetime.now())
-                )
-                new_id = cur.fetchone()[0]
-                flash("Страница успешно добавлена", "success")
-                return redirect(url_for("show_url", id=new_id))
     return render_template("main_content.html")
+
+
+@app.route("/urls", methods=["POST"])
+def add_url():
+    url = request.form.get("url", "").strip()
+    if not validators.url(url) or len(url) > 255:
+        flash("Некорректный URL", "danger")
+        return redirect(url_for("urls"))
+    parsed = urlparse(url)
+    normalized_url = f"{parsed.scheme}://{parsed.netloc}"
+    with get_conn() as conn:
+        with conn.cursor() as cur:
+            cur.execute("SELECT id FROM urls WHERE name=%s", (normalized_url,))
+            row = cur.fetchone()
+            if row:
+                flash("Страница уже существует", "info")
+                return redirect(url_for("show_url", id=row[0]))
+            cur.execute(
+                "INSERT INTO urls (name, created_at) VALUES (%s, %s) RETURNING id",
+                (normalized_url, datetime.now())
+            )
+            new_id = cur.fetchone()[0]
+            flash("Страница успешно добавлена", "success")
+            return redirect(url_for("show_url", id=new_id))
 
 
 @app.route('/urls')

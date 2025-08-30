@@ -5,8 +5,7 @@
     <div class="p-5 bg-light rounded-3 shadow-sm text-center">
       <h1 class="display-1 fw-bold mb-3">Анализатор страниц</h1>
       <p class="lead mb-4">Бесплатно проверяйте сайты на SEO-пригодность</p>
-      <form action="/" method="post" class="d-flex gap-2 justify-content-center">
-        <input
+      <form action="{{ url_for('urls') }}" method="post" class="d-flex gap-2 justify-content-center">        <input
           type="url"
           name="url"
           class="form-control form-control-lg"
