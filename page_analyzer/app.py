@@ -1,10 +1,11 @@
 import os
 from datetime import datetime
 from urllib.parse import urlparse
-import requests
-from bs4 import BeautifulSoup
+
 import psycopg2
+import requests
 import validators
+from bs4 import BeautifulSoup
 from dotenv import load_dotenv
 from flask import Flask, flash, redirect, render_template, request, url_for
 
@@ -142,8 +143,9 @@ def url_checks(id):
         url = row[0]
 
         response = requests.get(url, timeout=10)
+        response.raise_for_status()
+
         status_code = response.status_code
-        response.raise_for_status()   
 
         soup = BeautifulSoup(response.text, 'html.parser')
 
@@ -160,8 +162,17 @@ def url_checks(id):
 
         created_at = datetime.now()
         cur.execute(
-            '''INSERT INTO url_checks (url_id, status_code, h1, title, description, created_at)
-               VALUES (%s, %s, %s, %s, %s, %s)''',
+            '''
+            INSERT INTO url_checks (
+                url_id,
+                status_code,
+                h1,
+                title,
+                description,
+                created_at
+            )
+            VALUES (%s, %s, %s, %s, %s, %s)
+            ''',
             (id, status_code, h1, title, description, created_at)
         )
         conn.commit()
