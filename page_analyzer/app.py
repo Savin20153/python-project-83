@@ -27,7 +27,7 @@ def index():
         url = request.form.get("url", "").strip()
         if not validators.url(url) or len(url) > 255:
             flash("Некорректный URL", "danger")
-            return render_template("main_content.html")
+            return redirect(url_for("index"))
         parsed = urlparse(url)
         normalized_url = f"{parsed.scheme}://{parsed.netloc}"
         with get_conn() as conn:
