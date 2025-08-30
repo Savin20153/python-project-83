@@ -31,7 +31,7 @@ def add_url():
     url = request.form.get("url", "").strip()
     if not validators.url(url) or len(url) > 255:
         flash("Некорректный URL", "danger")
-        return redirect(url_for("urls"))
+        return render_template("main_content.html"), 422
     parsed = urlparse(url)
     normalized_url = f"{parsed.scheme}://{parsed.netloc}"
     with get_conn() as conn:
@@ -42,7 +42,8 @@ def add_url():
                 flash("Страница уже существует", "info")
                 return redirect(url_for("show_url", id=row[0]))
             cur.execute(
-                "INSERT INTO urls (name, created_at) VALUES (%s, %s) RETURNING id",
+                "INSERT INTO urls (name, created_at) "
+                "VALUES (%s, %s) RETURNING id",
                 (normalized_url, datetime.now())
             )
             new_id = cur.fetchone()[0]
