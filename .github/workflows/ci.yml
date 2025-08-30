@@ -20,7 +20,7 @@ jobs:
         # make depends on poetry
       - name: Install dependencies
         run: |
-          pip install poetry
+          pip install uv poetry
           make install
       - name: Run linter
         run: |
