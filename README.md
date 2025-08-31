@@ -11,15 +11,20 @@ https://python-page-analyzer-v8eo.onrender.com
 
 1. Склонировать репозиторий:
 ```
-https://github.com/Savin20153/python-project-83```
+https://github.com/Savin20153/python-project-83
+```
 
 2. Прейти в директорию проекта:
 ```
 cd python-project-83
 ```
 
+3. Установить проект:
 ```
-3. В проекте иcпользуется База данных <a href="https://www.postgresql.org/" rel="nofollow">PostrgreSQL</a>.
+make install
+```
+
+4. В проекте иcпользуется База данных <a href="https://www.postgresql.org/" rel="nofollow">PostrgreSQL</a>.
    Она должна быть установлена, и сервер запущен.
 
 
@@ -28,4 +33,9 @@ cd python-project-83
 Локально:
 ```
 make dev
+```
+
+На render.com:
+```
+make start
 ```
