@@ -18,7 +18,7 @@ from page_analyzer.url_validator import normalize_url, validate_url
 load_dotenv()
 
 app = Flask(__name__)
-app.config["SECRET_KEY"] = os.getenv("SECRET_KEY", "dev")
+app.config["SECRET_KEY"] = os.getenv("SECRET_KEY")
 
 
 @app.route("/", methods=["GET"])
